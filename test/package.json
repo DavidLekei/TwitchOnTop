@@ -1,0 +1,7 @@
+{
+  "name": "TwitchOnTop Tests",
+  "version": "1.0",
+  "scripts": {
+    "test": "jest"
+  }
+}

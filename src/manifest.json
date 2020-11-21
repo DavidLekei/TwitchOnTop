@@ -1,0 +1,32 @@
+{
+    //Required
+    "manifest_version":2,
+	"name":"TwitchOnTop",
+	"version":"1.0",
+
+    //Recommended
+    //"default_locale":"en",
+    "description":"Watch your favourite Twitch stream easily, on top of any other open windows",
+    "icons":{
+        "16":"images/get_started16.png",
+        "32":"images/get_started32.png",
+        "48":"images/get_started48.png",
+        "128":"images/get_started128.png"
+    },
+
+    //Pick one (or none)
+    "browser_action": {
+        "default_icon":"images/default_icon.png",
+        "default_title":"Twitch On Top",
+        "default_popup":"html/popup.html"
+    },
+    //"page_actions": {...},
+
+    // "permissions": ["storage", "declarativeContent", "activeTab"],
+    "permissions": ["storage", "tabs", "https://api.twitch.tv/", "https://id.twitch.tv/"],
+	"background": {
+      "scripts": ["scripts/core/background.js"],
+      "persistent": false
+    }
+    //"options_page":"options.html"
+}
