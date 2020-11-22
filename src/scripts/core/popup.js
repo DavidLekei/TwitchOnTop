@@ -3,10 +3,8 @@ const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 twitchGetInfoFromStorage();
 
 function init(twitch_username, twitch_id){
-	console.log("twitch_id = " + twitch_id);
 
 	if(twitch_id === null || twitch_id === undefined){
-		console.log("Asking User for Username");
 		promptUserForUsername();
 	}
 	else{
@@ -62,9 +60,6 @@ async function a_twitchGetLiveStreams(twitch_username, following, oauth_token){
 	xhr.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200){
 			response = JSON.parse(xhr.responseText);
-			console.log(response);
-			// live_users = getLiveUserNames(response['data']);
-			// console.log('Currently Live Streams: ' + live_users);
 			showLiveFollowing(twitch_username, response['data']);
 		}
 	};
@@ -91,7 +86,7 @@ async function a_twitchGetFollowingFromAPI(twitch_username, twitch_id){
 	xhr.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200){
 			response = JSON.parse(xhr.responseText);
-			console.log('Following: ' + response['follows'][2]['channel']['display_name']);
+			console.log(response);
 			a_getOAuthToken(twitch_username, response['follows']);
 		}
 	};
@@ -127,13 +122,13 @@ function addStreamToContentArea(streamInfo){
 	// 	</div>
  //        </a>
 
- 		console.log("TRYING TO READ FROM STREAMINFO: " + streamInfo['game_name']);
+ 		console.log("TRYING TO READ FROM STREAMINFO: " + streamInfo);
  		var user_name = streamInfo['user_name'];
  		var link = "https://player.twitch.tv/?channel=" + user_name + "&enableExtensions=true&muted=true&parent=twitch.tv&player=popout&volume=0.1899999976158142"
 		// var link = "https://twitch.tv/" + user_name;
 		var game = streamInfo['game_name'];
 		var title = streamInfo['title'];
-		var thumbnail = "https://static-cdn.jtvnw.net/previews-ttv/live_user_" + user_name + "-440x248.jpg"
+		var thumbnail = "https://static-cdn.jtvnw.net/previews-ttv/live_user_" + user_name.toLowerCase() + "-320x180.jpg"
 
 		const content_area = document.getElementById("content-area");
 
@@ -207,16 +202,6 @@ function promptUserForUsername(){
 
 	btn.onclick = (twitch_username) => buttonOnClick(input.value);
 
-	// btn.onclick = function(){
-	// 	id = twitchGetIdFromAPI(this.value);
-	// 	a_twitchGetIdFromAPI(this.value);
-	// 	chrome.storage.sync.set({'twitch_id': id}, function(){
-	// 		if(chrome.runtime.error){
-	// 			console.log('Runtime error');
-	// 		}
-	// 	});
-	// 	showUserFollowing("1klks - Following");
-	// };
 	cont.appendChild(h1);
 	cont.appendChild(input);
 	cont.appendChild(btn);
