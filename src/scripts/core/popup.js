@@ -14,6 +14,14 @@ function init(twitch_username, twitch_id){
 	}
 }
 
+function a_twitchOpenStream(url){
+	chrome.windows.create({url: url, focused: true, width: 800, height: 600, type: 'popup'}, function(){
+		chrome.windows.getCurrent(function(window){
+			chrome.windows.update(window.id, {alwaysOnTop: true});
+		});
+	});
+}
+
 function twitchGetInfoFromStorage(){
 	chrome.storage.sync.get(['twitch_id', 'twitch_username'], function(result){
 				init(result.twitch_username, result.twitch_id);
@@ -120,10 +128,12 @@ function addStreamToContentArea(streamInfo){
  //        </a>
 
  		console.log("TRYING TO READ FROM STREAMINFO: " + streamInfo['game_name']);
-		var link = "https://twitch.tv/" + streamInfo['user_name'];
+ 		var user_name = streamInfo['user_name'];
+ 		var link = "https://player.twitch.tv/?channel=" + user_name + "&enableExtensions=true&muted=true&parent=twitch.tv&player=popout&volume=0.1899999976158142"
+		// var link = "https://twitch.tv/" + user_name;
 		var game = streamInfo['game_name'];
 		var title = streamInfo['title'];
-		var thumbnail = streamInfo['thumbnail_url'];
+		var thumbnail = "https://static-cdn.jtvnw.net/previews-ttv/live_user_" + user_name + "-440x248.jpg"
 
 		const content_area = document.getElementById("content-area");
 
@@ -132,6 +142,7 @@ function addStreamToContentArea(streamInfo){
 
 		var stream = document.createElement("div");
 		stream.setAttribute("class", "stream-link");
+		stream.addEventListener('click', (url) => a_twitchOpenStream(link));
 
 		var img = document.createElement("img");
 		img.src = thumbnail;
@@ -140,7 +151,7 @@ function addStreamToContentArea(streamInfo){
 		stream_info.setAttribute("class", "stream-info");
 
 		var _name = document.createElement("p");
-		_name.innerHTML = streamInfo['user_name'];
+		_name.innerHTML = user_name;
 
 		var _game = document.createElement("p");
 		_game.innerHTML = game;
