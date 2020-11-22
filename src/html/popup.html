@@ -5,9 +5,14 @@
 		html {
   			font-family: "Roobert", "Inter", "Helvetica Neue",Helvetica, Arial,sans-serif;
   			font-style: normal;
-  			font-weight: 400;
-  			background-color: #01273d;
+  			font-weight: bold;
+  			background-color: #9147ff;
 		}
+        
+        a{
+        	text-decoration: none;
+            color: white;
+        }
 
 		button{
 			outline:none;
@@ -18,14 +23,44 @@
 			justify-content: flex-start;
 			padding: 8px;
 			color: white;
-			width: 200px;
-			height: 400px;
 		}
+
+		.stream-link {
+			display:flex;
+			flex-direction: row;
+            align-items: center;
+			padding: 8px;
+		}
+        .stream-link > img{
+        	width:40%;
+            height: 100%;
+        }
+        .stream-link > * {
+        	padding: 8px;
+        }
+        .stream-link:hover{
+        	cursor: pointer;
+        }
+        
+        .stream-info {
+        	width: 60%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: left;
+            padding: 2px;
+            flex-wrap: wrap
+        }
+       .stream-info > p{
+       	font-size: 13px;
+       }
+
 	</style>
 	<title></title>
 </head>
 <body>
 	<div class="content-area" id="content-area">
+    	
 	</div>
 	<script src="../scripts/core/popup.js"></script>
 </body>

@@ -55,9 +55,9 @@ async function a_twitchGetLiveStreams(twitch_username, following, oauth_token){
 		if(this.readyState == 4 && this.status == 200){
 			response = JSON.parse(xhr.responseText);
 			console.log(response);
-			live_users = getLiveUserNames(response['data']);
-			console.log('Currently Live Streams: ' + live_users);
-			showLiveFollowing(twitch_username + " - Following", live_users);
+			// live_users = getLiveUserNames(response['data']);
+			// console.log('Currently Live Streams: ' + live_users);
+			showLiveFollowing(twitch_username, response['data']);
 		}
 	};
 
@@ -107,13 +107,58 @@ async function a_twitchGetIdFromAPI(twitch_username){
 	xhr.send();
 }
 
-function addStreamToContentArea(streamName){
+function addStreamToContentArea(streamInfo){
+	// <a href="http://google.ca">
+	// 	<div class="stream-link">
+ //        	<img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_b0aty-440x248.jpg"> 
+ //            <div class="stream-info">
+	// 			<h1>b0aty</h1>
+ //                <p>Old-School Runescape</p>
+ //                <p>Long descriptuoin asfdsfa dfasf sdfds fdfsfadfsafsdfas fsf</p>
+ //            </div>
+	// 	</div>
+ //        </a>
+
+ 		console.log("TRYING TO READ FROM STREAMINFO: " + streamInfo['game_name']);
+		var link = "https://twitch.tv/" + streamInfo['user_name'];
+		var game = streamInfo['game_name'];
+		var title = streamInfo['title'];
+		var thumbnail = streamInfo['thumbnail_url'];
+
 		const content_area = document.getElementById("content-area");
 
-		var name = document.createElement("p");
-		name.innerHTML = streamName;
+		var a = document.createElement("a");
+		a.href = link;
 
-		content_area.appendChild(name);
+		var stream = document.createElement("div");
+		stream.setAttribute("class", "stream-link");
+
+		var img = document.createElement("img");
+		img.src = thumbnail;
+
+		var stream_info = document.createElement("div");
+		stream_info.setAttribute("class", "stream-info");
+
+		var _name = document.createElement("p");
+		_name.innerHTML = streamInfo['user_name'];
+
+		var _game = document.createElement("p");
+		_game.innerHTML = game;
+
+		var stream_title = document.createElement("p");
+		stream_title.innerHTML = title;
+
+		stream_info.appendChild(_name);
+		stream_info.appendChild(_game);
+		stream_info.appendChild(stream_title);
+
+		stream.appendChild(img);
+		stream.appendChild(stream_info);
+
+		
+
+
+		content_area.appendChild(stream);
 	};
 
 function showLiveFollowing(username, following_list){
@@ -122,7 +167,7 @@ function showLiveFollowing(username, following_list){
 	const cont = document.getElementById("content-area");
 	cont.innerHTML = "";
 	const h1 = document.createElement("h1");
-	h1.innerHTML = username;
+	h1.innerHTML = username + " - Following";
 	cont.appendChild(h1);
 
 	const clear_btn = document.createElement("button");
