@@ -188,6 +188,7 @@ function showLiveFollowing(username, following_list){
 	for(var i = 0; i < following_list.length; i++){
 		addStreamToContentArea(following_list[i]);
 	}
+	chrome.browserAction.setBadgeText({text: "" + following_list.length}, null);
 
 }
 function promptUserForUsername(){

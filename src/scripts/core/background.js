@@ -21,11 +21,6 @@ function storeOAuthToken(token){
 
 
 function requestOAuthToken(){
-	//TODO: Store Client ID in chrome.storage
-	// const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
-	// const CLIENT_SECRET = 'kuc7n1itvd62rpp70bax5gpx2qkn2p';
-	// var params = "client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&grant_type=client_credentials";
-
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200){
@@ -40,7 +35,6 @@ function requestOAuthToken(){
 		}
 	};
 	xhr.open("GET", "http://localhost:5000/oauth/TwitchOnTop/?passwd=BadPassword321")
-	// xhr.open("POST", "https://id.twitch.tv/oauth2/token?client_id=" + CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&grant_type=client_credentials");
 	xhr.send();
 }
 
@@ -51,7 +45,6 @@ function twitchGetLiveFollowed(){
 function initTwitchSettings(){
 	var liveFollowed = twitchGetLiveFollowed();
 	requestOAuthToken();
-	chrome.browserAction.setBadgeText({text: liveFollowed}, null);
 }
 
 function init(){
