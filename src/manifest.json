@@ -27,6 +27,6 @@
 	"background": {
       "scripts": ["scripts/core/background.js"],
       "persistent": false
-    }
-    //"options_page":"options.html"
+    },
+    "options_page":"html/options.html"
 }

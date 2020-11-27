@@ -25,8 +25,8 @@ function requestOAuthToken(){
 	xhr.onreadystatechange = function(){
 		if(this.readyState == 4 && this.status == 200){
 			console.log('OAuth Token Recieved: ' + xhr.responseText);
-			response = JSON.parse(xhr.responseText);
-			token = response['access_token'];
+			//response = JSON.parse(xhr.responseText);
+			token = xhr.responseText;
 			console.log('Got New OAuth Token: ' + token)
 			storeOAuthToken(token);
 		}
@@ -34,16 +34,12 @@ function requestOAuthToken(){
 			console.log('400: ' + xhr.responseText);
 		}
 	};
-	xhr.open("GET", "http://localhost:5000/oauth/TwitchOnTop/?passwd=BadPassword321")
+	xhr.open("GET", "https://oauth2-serv.herokuapp.com/oauth/TwitchOnTop/?passwd=BadPassword321")
 	xhr.send();
 }
 
-function twitchGetLiveFollowed(){
-	return "5";
-}
 
 function initTwitchSettings(){
-	var liveFollowed = twitchGetLiveFollowed();
 	requestOAuthToken();
 }
 
