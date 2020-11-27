@@ -23,7 +23,7 @@
     //"page_actions": {...},
 
     // "permissions": ["storage", "declarativeContent", "activeTab"],
-    "permissions": ["storage", "tabs", "https://api.twitch.tv/", "https://id.twitch.tv/", "https://static-cdn.jtvnw.net/"],
+    "permissions": ["storage", "tabs", "activeTab", "https://api.twitch.tv/", "https://id.twitch.tv/", "https://static-cdn.jtvnw.net/", "https://player.twitch.tv/*"],
 	"background": {
       "scripts": ["scripts/core/background.js"],
       "persistent": false

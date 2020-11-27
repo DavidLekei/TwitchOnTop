@@ -1,8 +1,11 @@
 const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 
+var videoWindowType = null;
+
 twitchGetInfoFromStorage();
 
 function init(twitch_username, twitch_id){
+	loadUserOptions();
 
 	if(twitch_id === null || twitch_id === undefined){
 		promptUserForUsername();
@@ -12,12 +15,46 @@ function init(twitch_username, twitch_id){
 	}
 }
 
-function a_twitchOpenStream(url){
-	chrome.windows.create({url: url, focused: true, width: 800, height: 600, type: 'popup'}, function(){
-		chrome.windows.getCurrent(function(window){
-			chrome.windows.update(window.id, {alwaysOnTop: true});
-		});
+function loadUserOptions(){
+	chrome.storage.sync.get({windowType: 'pip'}, function(options){
+		videoWindowType = options.windowType;
+		console.log('videoWindowType = ' + videoWindowType);
 	});
+}
+
+function createPictureInPicture(tab){
+	console.log('Creating PictureInPicture...');
+
+	console.log('new tab id = ' + tab.id);
+	chrome.tabs.executeScript(tab.id, {file: 'scripts/core/pip.js'}, function(){
+		console.log("Injected Script");
+	});
+}
+
+function a_twitchOpenStream(url){
+	if(videoWindowType === 'popup'){
+		chrome.windows.create({url: url, focused: true, width: 800, height: 600, type: 'popup'}, function(){
+			// chrome.windows.getCurrent(function(window){
+			// 	chrome.windows.update(window.id, {alwaysOnTop: true});
+			// });
+		});
+	} //TODO: This creates a tab with JUST the player (ie. no chat, no banners, etc). Maybe add an optionn to load like this vs load the whole page?
+	else if(videoWindowType === 'new-tab'){
+		chrome.tabs.create({
+			url: url, active: false
+		}, function(){
+			console.log('New Tab Opened');
+		});
+	}
+	else if(videoWindowType === 'pip'){
+		chrome.tabs.create({
+			url: url, active: false
+		},
+		(tab) => createPictureInPicture(tab));
+	}
+	else{
+		alert('ERROR: videoWindowType set to unknown value. Cannot display video. Try reloading the extension.');
+	}
 }
 
 function twitchGetInfoFromStorage(){
