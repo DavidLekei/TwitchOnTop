@@ -6,12 +6,35 @@ twitchGetInfoFromStorage();
 
 function init(twitch_username, twitch_id){
 	loadUserOptions();
+	setupListeners();
 
 	if(twitch_id === null || twitch_id === undefined){
 		promptUserForUsername();
 	}
 	else{
 		a_twitchGetFollowingFromAPI(twitch_username, twitch_id);
+	}
+}
+
+function setupListeners()
+{
+	document.addEventListener('keydown', event => {
+		if(event.keyCode === 17){
+			changeCheckboxes("visible");
+		}
+	});
+
+	document.addEventListener('keyup', event => {
+		if(event.keyCode === 17){
+			changeCheckboxes("hidden");
+		}
+	});
+}
+
+function changeCheckboxes(visible){
+	checkboxes = document.querySelectorAll("input");
+	for(var i = 0; i < checkboxes.length; i++){
+		checkboxes[i].style.visibility = visible;
 	}
 }
 
@@ -172,12 +195,20 @@ function addStreamToContentArea(streamInfo){
 		var a = document.createElement("a");
 		a.href = link;
 
+		var checkbox = document.createElement("input");
+		checkbox.setAttribute("type", "checkbox");
+		checkbox.style.visibility = "hidden";
+		checkbox.addEventListener('click', function(event){
+			console.log('Checkbox changed: ' + this.checked);
+		});
+
 		var stream = document.createElement("div");
 		stream.setAttribute("class", "stream-link");
-		stream.addEventListener('click', (url) => a_twitchOpenStream(link));
+		//stream.addEventListener('click', (url) => a_twitchOpenStream(link));
 
 		var img = document.createElement("img");
 		img.src = thumbnail;
+		img.addEventListener('click', (url) => a_twitchOpenStream(link));
 
 		var stream_info = document.createElement("div");
 		stream_info.setAttribute("class", "stream-info");
@@ -195,6 +226,7 @@ function addStreamToContentArea(streamInfo){
 		stream_info.appendChild(_game);
 		stream_info.appendChild(stream_title);
 
+		stream.appendChild(checkbox);
 		stream.appendChild(img);
 		stream.appendChild(stream_info);
 

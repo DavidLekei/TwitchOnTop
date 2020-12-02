@@ -43,10 +43,16 @@ function initTwitchSettings(){
 	requestOAuthToken();
 }
 
+//TODO: Allow user to specify period in options.js
+function createAlarms(){
+	chrome.alarms.create('getLiveFollowingCount', {periodInMinutes: 10});
+}
+
 function init(){
 	chrome.storage.sync.clear();
 	console.log("Initializing TwitchOnTop");
 	initTwitchSettings();
+	createAlarms();
 }
 
 
@@ -67,4 +73,11 @@ chrome.runtime.onMessage.addListener(
 			});
 		}
 	}
+);
+
+chrome.alarms.onAlarm.addListener(
+	function(alarm){
+		//Get live following and update badge
+		console.log('alarm fired');
+	}	
 );

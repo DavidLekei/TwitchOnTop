@@ -16,14 +16,14 @@
 
     //Pick one (or none)
     "browser_action": {
-        "default_icon":"images/default_icon.png",
+        "default_icon":"images/icon.png", //streaming by Aquene Ardeen from the Noun Project
         "default_title":"Twitch On Top",
         "default_popup":"html/popup.html"
     },
     //"page_actions": {...},
 
     // "permissions": ["storage", "declarativeContent", "activeTab"],
-    "permissions": ["storage", "tabs", "activeTab", "https://api.twitch.tv/", "https://id.twitch.tv/", "https://static-cdn.jtvnw.net/", "https://player.twitch.tv/*"],
+    "permissions": ["storage", "alarms", "activeTab", "https://api.twitch.tv/", "https://id.twitch.tv/", "https://static-cdn.jtvnw.net/", "https://player.twitch.tv/*"],
 	"background": {
       "scripts": ["scripts/core/background.js"],
       "persistent": false
