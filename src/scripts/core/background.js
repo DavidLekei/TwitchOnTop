@@ -8,6 +8,11 @@
 //			- Check if still valid (expires in about 30 days)
 //			- If expired, get a new one, repeat
 
+const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
+var notified = [];
+var notification_list = null;
+var OAUTH_TOKEN = null;
+
 function storeOAuthToken(token){
 	chrome.storage.sync.set({'oauth_token': token}, function(){
 		if(chrome.runtime.error){
@@ -19,7 +24,6 @@ function storeOAuthToken(token){
 	});
 }
 
-
 function requestOAuthToken(){
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function(){
@@ -28,6 +32,7 @@ function requestOAuthToken(){
 			//response = JSON.parse(xhr.responseText);
 			token = xhr.responseText;
 			console.log('Got New OAuth Token: ' + token)
+			OAUTH_TOKEN = token;
 			storeOAuthToken(token);
 		}
 		if(this.status == 400){
@@ -38,26 +43,93 @@ function requestOAuthToken(){
 	xhr.send();
 }
 
+//TODO: Query user_id instead of user_name so that we don't get a response of multiple channels.
+function isLive(user_name){
+	var xhr = new XMLHttpRequest();
+	// xhr.onreadystatechange = function(){
+	// 	if(this.readyState == 4 && this.status == 200){
+	// 		json = JSON.parse(xhr.responseText);
+	// 		console.log('isLive response: ' + json['data'][0]['is_live']);
+	// 	}
+	// }
 
-function initTwitchSettings(){
-	requestOAuthToken();
+	xhr.open("GET", "https://api.twitch.tv/helix/search/channels?query=" + user_name, false);
+	xhr.setRequestHeader('Client-ID', CLIENT_ID);
+	xhr.setRequestHeader('Authorization', 'Bearer ' + OAUTH_TOKEN);
+	xhr.send();
+
+	if(xhr.status == 200)
+	{
+		json = JSON.parse(xhr.responseText);
+		console.log('isLive response: ' + json['data'][0]['is_live']);
+		return json['data'][0]['is_live'];
+	}
+	return false;
+}
+
+function initNotificationsList(){
+	chrome.storage.sync.set({notification_list: []}, function(result){
+		console.log('Initialized empty notification list.');
+	});
+}
+
+function getNotificationsList(){
+	chrome.storage.sync.get(['notification_list'], function(result){
+		notification_list = result.notification_list;
+	});
+}
+
+//Check if any users in the notifications_list have gone live since last check.
+function checkNotificationsLive(){
+	console.log('Checking Notifications List for Live users - length: ' + notification_list.length);
+	for(var i = 0; i < notification_list.length; i++){
+		if(isLive(notification_list[i]) == true){
+			chrome.notifications.create("_" + i, {type: 'basic', title: 'TwitchOnTop', message: '' + notification_list[i] + ' is now live!', iconUrl: 'images/icon.png'}, function(e){
+				console.log('created notification');
+			} );
+			notified.push(notification_list[i]);
+			notification_list.splice(i, 1);
+		}
+	}
+}
+
+function checkNotifiedOffline(){
+	for(var i = 0; i < notified.length; i++){
+		if(!isLive(notified[i])){
+			notification_list.push(notified[i]);
+			notified.splice(i, 1);
+		}
+	}
+}
+
+function getLive(){
+	console.log('Alarm fired.');
 }
 
 //TODO: Allow user to specify period in options.js
 function createAlarms(){
-	chrome.alarms.create('getLiveFollowingCount', {periodInMinutes: 10});
+	chrome.alarms.create('getLive', {periodInMinutes: 1});
+	chrome.alarms.create('checkNotificationsLive', {periodInMinutes: 10});
+	chrome.alarms.create('checkNotifiedOffline', {periodInMinutes: 30});
 }
 
-function init(){
+function startup(){
+	//TODO: Remove the clear()
 	chrome.storage.sync.clear();
 	console.log("Initializing TwitchOnTop");
-	initTwitchSettings();
+	requestOAuthToken();
 	createAlarms();
+	getNotificationsList();
 }
 
+function installed(){
+	requestOAuthToken();
+	createAlarms();
+	initNotificationsList();
+}
 
-chrome.runtime.onStartup.addListener(init);
-chrome.runtime.onInstalled.addListener(init);
+chrome.runtime.onStartup.addListener(startup);
+chrome.runtime.onInstalled.addListener(installed);
 
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse){
@@ -72,12 +144,25 @@ chrome.runtime.onMessage.addListener(
 				sendResponse({oauth_token: result.oauth_token}, function(){});
 			});
 		}
+		else if(request.action == 'refreshNotificationList'){
+			chrome.storage.sync.get(['notification_list'], function(result){
+				notification_list = result.notification_list;
+			});
+		}
 	}
 );
 
 chrome.alarms.onAlarm.addListener(
 	function(alarm){
 		//Get live following and update badge
-		console.log('alarm fired');
+		if(alarm.name == 'getLive'){
+			console.log('Alarm for getLive');
+		}
+		else if(alarm.name == 'checkNotificationsLive'){
+			checkNotificationsLive();
+		}
+		else if(alarm.name == 'checkNotifiedOffline'){
+			checkNotifiedOffline();
+		}
 	}	
 );

@@ -1,6 +1,7 @@
 const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 
 var videoWindowType = null;
+var notification_list = null;
 
 twitchGetInfoFromStorage();
 
@@ -39,7 +40,10 @@ function changeCheckboxes(visible){
 }
 
 function loadUserOptions(){
-	chrome.storage.sync.get({windowType: 'pip'}, function(options){
+	chrome.storage.sync.get(['notification_list'], function(results){
+		notification_list = results.notification_list;
+	});
+	chrome.storage.sync.get(['windowType'], function(options){
 		videoWindowType = options.windowType;
 		console.log('videoWindowType = ' + videoWindowType);
 	});
@@ -170,6 +174,22 @@ async function a_twitchGetIdFromAPI(twitch_username){
 	xhr.send();
 }
 
+function addStreamToNotifications(user_name){
+	chrome.storage.sync.get(['notification_list'], function(results){
+		console.log('Adding ' + user_name + ' to Notifications');
+		if(!results.notification_list.includes(user_name)){
+			results.notification_list.push(user_name);
+			chrome.storage.sync.set({notification_list: results.notification_list}, function(obj){
+				console.log('Added ' + user_name + '!');
+				 chrome.runtime.sendMessage({'action': 'refreshNotificationList', 'user':user_name}, null);
+			});
+		}
+	});
+}
+function removeStreamFromNotifications(user_name){
+
+}
+
 function addStreamToContentArea(streamInfo){
 	// <a href="http://google.ca">
 	// 	<div class="stream-link">
@@ -198,8 +218,16 @@ function addStreamToContentArea(streamInfo){
 		var checkbox = document.createElement("input");
 		checkbox.setAttribute("type", "checkbox");
 		checkbox.style.visibility = "hidden";
+		if(notification_list.includes(user_name)){
+			checkbox.checked = true;
+		}
 		checkbox.addEventListener('click', function(event){
-			console.log('Checkbox changed: ' + this.checked);
+			if(this.checked){
+				addStreamToNotifications(user_name);
+			}
+			else{
+				removeStreamFromNotifications(user_name);
+			}
 		});
 
 		var stream = document.createElement("div");

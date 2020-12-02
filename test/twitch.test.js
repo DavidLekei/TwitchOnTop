@@ -1,3 +1,6 @@
+const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
+const OAUTH_TOKEN = '06dhista7o0ppt66sgekzdlfq6cl5i';
+
 function testTwitchAuthenticate(){
 	const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 
@@ -23,3 +26,9 @@ test('Authenticates Twitch user using Twitch API', () => {
 	expect(res).toBe(true);
 	// expect(testTwitchAuthenticate().toReturn(true));
 });
+
+
+function WebsocketTests()
+{
+
+}
