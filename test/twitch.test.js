@@ -1,34 +1,57 @@
+const background = require('./background.test.js');
+
 const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 const OAUTH_TOKEN = '06dhista7o0ppt66sgekzdlfq6cl5i';
 
-function testTwitchAuthenticate(){
-	const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 
-	var xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = function(){
-		if(this.readyState == 4 && this.status == 200){
-			console.log(xhr.responseText);
+const set = jest.fn()
+const get = jest.fn()
+get.mockReturnValue(OAUTH_TOKEN);
+global.chrome = {
+   runtime: {
+   	onStartup:{
+   		addListener: function(){}
+   	},
+   	onInstalled:{
+   		addListener: function(){}
+   	}
+   },
+   storage: {
+   	sync: {
+   		set,
+   		// set: function(token){},
+   		get
+   	}
+   }
+};
+
+mockCallback = (result) => jest.fn()
+
+describe('Chrome Storage', () => {
+	test('Store OAuth Token', () => {
+		background.StoreOAuthToken(OAUTH_TOKEN);
+		expect(chrome.storage.sync.set).toHaveBeenCalledTimes(1);
+		expect(chrome.storage.sync.set).toHaveBeenCalledWith({oauth_token: OAUTH_TOKEN}, expect.any(Function));
+		
+	});
+
+	test('Get OAuth Token', () => {
+		background.GetOAuthToken();
+		expect(chrome.storage.sync.get).toHaveBeenCalled();
+		expect(chrome.storage.sync.get).toHaveBeenCalledTimes(1);
+	});
+
+	test('Should Get The Token', () => {
+		function callback(data){
+			try{
+				expect(data).toBe(OAUTH_TOKEN);
+				done();
+			} catch(error){
+				done(error);
+			}
 		}
-	};
 
-	xhr.open("GET", "https://id.twitch.tv/oauth2/authorize?client_id=" + CLIENT_ID +
-		"&redirect_uri=http://localhost" +
-		"&response_type=token" + 
-		"&scope=viewing_activity_read"
-		);
+		chrome.storage.sync.get(['oauth_token'], callback);
+	});
 
-	return true;
-}
-
-test('Authenticates Twitch user using Twitch API', () => {
-	var res = testTwitchAuthenticate();
-	expect(res.toBeTruthy);
-	expect(res).toBe(true);
-	// expect(testTwitchAuthenticate().toReturn(true));
 });
-
-
-function WebsocketTests()
-{
-
-}

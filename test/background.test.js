@@ -24,6 +24,12 @@ function storeOAuthToken(token){
 	});
 }
 
+function getOAuthToken(){
+	chrome.storage.sync.get(['oauth_token'], function(result){
+
+	});
+}
+
 function requestOAuthToken(){
 	console.log('Requesting OAuth Token...');
 	var xhr = new XMLHttpRequest();
@@ -116,11 +122,51 @@ function createAlarms(){
 	chrome.alarms.create('checkNotifiedOffline', {periodInMinutes: 30});
 }
 
+function initListeners(){
+
+	chrome.runtime.onMessage.addListener(
+		function(request, sender, sendResponse){
+			console.log('Action Recieved: ' + request.action);
+			if(request.action === 'twitchGetId'){
+				twitch_id = twitchGetId();
+				sendResponse({twitch_id: twitch_id}, function(){});
+			}
+			else if(request.action == 'twitchGetOAuthToken'){
+				chrome.storage.sync.get(['oauth_token'], function(result) {
+					console.log('OAuth Token : ' + result.oauth_token + ' Stored');
+					sendResponse({oauth_token: result.oauth_token}, function(){});
+				});
+			}
+			else if(request.action == 'refreshNotificationList'){
+				chrome.storage.sync.get(['notification_list'], function(result){
+					notification_list = result.notification_list;
+				});
+			}
+		}
+	);
+
+	chrome.alarms.onAlarm.addListener(
+		function(alarm){
+			//Get live following and update badge
+			if(alarm.name == 'getLive'){
+				console.log('Alarm for getLive');
+			}
+			else if(alarm.name == 'checkNotificationsLive'){
+				checkNotificationsLive();
+			}
+			else if(alarm.name == 'checkNotifiedOffline'){
+				checkNotifiedOffline();
+			}
+		}	
+	);
+}
+
 function startup(){
 	//TODO: Remove the clear()
 	chrome.storage.sync.clear();
 	console.log("Initializing TwitchOnTop");
 	requestOAuthToken();
+	initListeners();
 	createAlarms();
 	getNotificationsList();
 }
@@ -131,41 +177,18 @@ function installed(){
 	initNotificationsList();
 }
 
-chrome.runtime.onStartup.addListener(startup);
-chrome.runtime.onInstalled.addListener(installed);
+// chrome.runtime.onStartup.addListener(startup);
+// chrome.runtime.onInstalled.addListener(installed);
 
-chrome.runtime.onMessage.addListener(
-	function(request, sender, sendResponse){
-		console.log('Action Recieved: ' + request.action);
-		if(request.action === 'twitchGetId'){
-			twitch_id = twitchGetId();
-			sendResponse({twitch_id: twitch_id}, function(){});
-		}
-		else if(request.action == 'twitchGetOAuthToken'){
-			chrome.storage.sync.get(['oauth_token'], function(result) {
-				console.log('OAuth Token : ' + result.oauth_token + ' Stored');
-				sendResponse({oauth_token: result.oauth_token}, function(){});
-			});
-		}
-		else if(request.action == 'refreshNotificationList'){
-			chrome.storage.sync.get(['notification_list'], function(result){
-				notification_list = result.notification_list;
-			});
-		}
-	}
-);
-
-chrome.alarms.onAlarm.addListener(
-	function(alarm){
-		//Get live following and update badge
-		if(alarm.name == 'getLive'){
-			console.log('Alarm for getLive');
-		}
-		else if(alarm.name == 'checkNotificationsLive'){
-			checkNotificationsLive();
-		}
-		else if(alarm.name == 'checkNotifiedOffline'){
-			checkNotifiedOffline();
-		}
-	}	
-);
+module.exports = {
+	StoreOAuthToken: (token) => storeOAuthToken(token),
+	GetOAuthToken: () => getOAuthToken(),
+	RequestOAuthToken: () => requestOAuthToken(),
+	IsLive: (user_name) => isLive(user_name),
+	InitNotificationsList: () => initNotificationsList(),
+	GetNotificationsList: () => getNotificationsList(),
+	CheckNotificationsLive: () => checkNotificationsLive(),
+	CheckNotifiedOffline: () => checkNotifiedOffline(),
+	GetLive: () => getLive(),
+	CreateAlarms: () => createAlarms()
+}
