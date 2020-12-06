@@ -4,9 +4,18 @@ const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 const OAUTH_TOKEN = '06dhista7o0ppt66sgekzdlfq6cl5i';
 
 
+let mockxhr = {
+      open: jest.fn(),
+      setRequestHeader: jest.fn(),
+      onreadystatechange: jest.fn(),
+      send: jest.fn(),
+      readyState: 4,
+      responseText: OAUTH_TOKEN,
+      status: 200
+    }
+
 const set = jest.fn()
 const get = jest.fn()
-get.mockReturnValue(OAUTH_TOKEN);
 global.chrome = {
    runtime: {
    	onStartup:{
@@ -41,17 +50,43 @@ describe('Chrome Storage', () => {
 		expect(chrome.storage.sync.get).toHaveBeenCalledTimes(1);
 	});
 
-	test('Should Get The Token', () => {
-		function callback(data){
-			try{
-				expect(data).toBe(OAUTH_TOKEN);
-				done();
-			} catch(error){
-				done(error);
-			}
-		}
+});
 
-		chrome.storage.sync.get(['oauth_token'], callback);
+describe('XMLHttpRequests', () => {
+	beforeAll(() => {
+		const oldXHR = window.XMLHttpRequest;
+		window.XMLHttpRequest = jest.fn(() => mockxhr);
+	 } );
+
+	afterAll(() => {
+		window.XMLHttpRequest = oldXHR;
+	});
+	test('Request OAuth Token', () => {
+		background.RequestOAuthToken();
+		expect(mockxhr.open).toHaveBeenCalled();
+		expect(mockxhr.open).toHaveBeenCalledWith("GET", "https://oauth2-serv.herokuapp.com/oauth/TwitchOnTop/?passwd=BadPassword321");
+		expect(mockxhr.send).toHaveBeenCalled();
+		mockxhr.onreadystatechange();
+		expect(token).toBe(OAUTH_TOKEN);
+	} );
+
+	test('Is Stream Live', () => {
+		let mockResponse = {'data': [
+			{
+				'is_live': true
+			}
+		]};
+		mockxhr.responseText = JSON.stringify(mockResponse);
+		background.IsLive('1klks');
+		expect(mockxhr.open).toHaveBeenCalled();
+		expect(mockxhr.open).toHaveBeenCalledWith("GET", "https://api.twitch.tv/helix/search/channels?query=1klks", false);
+		expect(mockxhr.setRequestHeader).toHaveBeenCalled();
+		expect(mockxhr.setRequestHeader).toHaveBeenCalledWith("Client-ID", CLIENT_ID);
+		expect(mockxhr.setRequestHeader).toHaveBeenCalledWith('Authorization', 'Bearer ' + OAUTH_TOKEN);
+		expect(mockxhr.send).toHaveBeenCalled();
+		mockxhr.onreadystatechange();
+		expect(json).toBeDefined();
+		expect(json).toStrictEqual(mockResponse);
 	});
 
 });
