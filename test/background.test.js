@@ -52,13 +52,6 @@ function requestOAuthToken(){
 //TODO: Query user_id instead of user_name so that we don't get a response of multiple channels.
 function isLive(user_name){
 	var xhr = new XMLHttpRequest();
-	// xhr.onreadystatechange = function(){
-	// 	if(this.readyState == 4 && this.status == 200){
-	// 		json = JSON.parse(xhr.responseText);
-	// 		console.log('isLive response: ' + json['data'][0]['is_live']);
-	// 	}
-	// }
-
 	xhr.open("GET", "https://api.twitch.tv/helix/search/channels?query=" + user_name, false);
 	xhr.setRequestHeader('Client-ID', CLIENT_ID);
 	xhr.setRequestHeader('Authorization', 'Bearer ' + OAUTH_TOKEN);
@@ -87,19 +80,23 @@ function getNotificationsList(){
 
 //Check if any users in the notifications_list have gone live since last check.
 function checkNotificationsLive(){
-	if(notification_list.length == null){
+	if(notification_list == null){
+		console.log('Notification list is null');
 		return;
 	}
-	console.log('Checking Notifications List for Live users - length: ' + notification_list.length);
-	for(var i = 0; i < notification_list.length; i++){
-		if(isLive(notification_list[i]) == true){
-			chrome.notifications.create("_" + i, {type: 'basic', title: 'TwitchOnTop', message: '' + notification_list[i] + ' is now live!', iconUrl: 'images/icon.png'}, function(e){
+	chrome.notifications.create("_" + i, {type: 'basic', title: 'TwitchOnTop', message: '' + notification_list[i] + ' is now live!', iconUrl: 'images/icon.png'}, function(e){
 				console.log('created notification');
 			} );
-			notified.push(notification_list[i]);
-			notification_list.splice(i, 1);
-		}
-	}
+	// console.log('Checking Notifications List for Live users - length: ' + notification_list.length);
+	// for(var i = 0; i < notification_list.length; i++){
+	// 	if(isLive(notification_list[i]) == true){
+	// 		chrome.notifications.create("_" + i, {type: 'basic', title: 'TwitchOnTop', message: '' + notification_list[i] + ' is now live!', iconUrl: 'images/icon.png'}, function(e){
+	// 			console.log('created notification');
+	// 		} );
+	// 		notified.push(notification_list[i]);
+	// 		notification_list.splice(i, 1);
+	// 	}
+	// }
 }
 
 function checkNotifiedOffline(){
@@ -190,5 +187,8 @@ module.exports = {
 	CheckNotificationsLive: () => checkNotificationsLive(),
 	CheckNotifiedOffline: () => checkNotifiedOffline(),
 	GetLive: () => getLive(),
-	CreateAlarms: () => createAlarms()
+	CreateAlarms: () => createAlarms(), 
+	globals: {
+		notification_list: []
+	}
 }

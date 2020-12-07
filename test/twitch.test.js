@@ -3,7 +3,6 @@ const background = require('./background.test.js');
 const CLIENT_ID = '53kofil8rhhvjys3tksz8rixg65tc4';
 const OAUTH_TOKEN = '06dhista7o0ppt66sgekzdlfq6cl5i';
 
-
 let mockxhr = {
       open: jest.fn(),
       setRequestHeader: jest.fn(),
@@ -14,23 +13,24 @@ let mockxhr = {
       status: 200
     }
 
-const set = jest.fn()
-const get = jest.fn()
 global.chrome = {
    runtime: {
    	onStartup:{
-   		addListener: function(){}
+   		addListener: jest.fn()
    	},
    	onInstalled:{
-   		addListener: function(){}
+   		addListener: jest.fn()
    	}
    },
    storage: {
    	sync: {
-   		set,
+   		set: jest.fn(),
    		// set: function(token){},
-   		get
+   		get: jest.fn()
    	}
+   },
+   notifications: {
+   	create: jest.fn()
    }
 };
 
@@ -77,6 +77,8 @@ describe('XMLHttpRequests', () => {
 			}
 		]};
 		mockxhr.responseText = JSON.stringify(mockResponse);
+
+
 		background.IsLive('1klks');
 		expect(mockxhr.open).toHaveBeenCalled();
 		expect(mockxhr.open).toHaveBeenCalledWith("GET", "https://api.twitch.tv/helix/search/channels?query=1klks", false);
@@ -89,4 +91,14 @@ describe('XMLHttpRequests', () => {
 		expect(json).toStrictEqual(mockResponse);
 	});
 
+});
+
+describe('Notifications', () => {
+	// background.isLive = jest.fn(() => true);
+	// background.globals.notification_list = []
+	console.log(background.globals);
+
+	background.CheckNotificationsLive();
+
+	expect(chrome.notifications.create).toHaveBeenCalled();
 });
