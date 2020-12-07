@@ -296,7 +296,7 @@ function promptUserForUsername(){
 	const input = document.createElement("input");
 	input.setAttribute("type", "text");
 	const btn = document.createElement("button");
-	btn.innerHTML = "Autheticate Twitch";
+	btn.innerHTML = "Get Following List";
 
 	btn.onclick = (twitch_username) => buttonOnClick(input.value);
 

@@ -39,9 +39,27 @@ Jest is used for unit testing JavaScript (Not fully implemented)
 
 ## Screenshots
 
+### Enter your username
+
+![](https://i.gyazo.com/08588a820cfd2cc0086260a72f345b69.png)
+
+### Any Streamers that you follow that are currently live will be displayed
+
+![](https://i.gyazo.com/e978b90b4887701f3534f2b09c585572.png)
+
+### Configure how the Stream appears
+
+![](https://i.gyazo.com/71a5ed84aad147bbb422e0d337345c44.png)
+
+### Use Picture-in-Picture to Multitask!
+
+![](https://i.gyazo.com/dc29c1f2185f09f4a174e14b31a7f903.png)
+
 
 ## Author
 
 David Lekei
 
 ## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details

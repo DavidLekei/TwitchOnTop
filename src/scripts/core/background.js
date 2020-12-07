@@ -24,12 +24,6 @@ function storeOAuthToken(token){
 	});
 }
 
-function getOAuthToken(){
-	chrome.storage.sync.get(['oauth_token'], function(result){
-
-	});
-}
-
 function requestOAuthToken(){
 	console.log('Requesting OAuth Token...');
 	var xhr = new XMLHttpRequest();
@@ -52,6 +46,13 @@ function requestOAuthToken(){
 //TODO: Query user_id instead of user_name so that we don't get a response of multiple channels.
 function isLive(user_name){
 	var xhr = new XMLHttpRequest();
+	// xhr.onreadystatechange = function(){
+	// 	if(this.readyState == 4 && this.status == 200){
+	// 		json = JSON.parse(xhr.responseText);
+	// 		console.log('isLive response: ' + json['data'][0]['is_live']);
+	// 	}
+	// }
+
 	xhr.open("GET", "https://api.twitch.tv/helix/search/channels?query=" + user_name, false);
 	xhr.setRequestHeader('Client-ID', CLIENT_ID);
 	xhr.setRequestHeader('Authorization', 'Bearer ' + OAUTH_TOKEN);
@@ -81,22 +82,18 @@ function getNotificationsList(){
 //Check if any users in the notifications_list have gone live since last check.
 function checkNotificationsLive(){
 	if(notification_list == null){
-		console.log('Notification list is null');
 		return;
 	}
-	chrome.notifications.create("_" + i, {type: 'basic', title: 'TwitchOnTop', message: '' + notification_list[i] + ' is now live!', iconUrl: 'images/icon.png'}, function(e){
+	console.log('Checking Notifications List for Live users - length: ' + notification_list.length);
+	for(var i = 0; i < notification_list.length; i++){
+		if(isLive(notification_list[i]) == true){
+			chrome.notifications.create("_" + i, {type: 'basic', title: 'TwitchOnTop', message: '' + notification_list[i] + ' is now live!', iconUrl: 'images/icon.png'}, function(e){
 				console.log('created notification');
 			} );
-	// console.log('Checking Notifications List for Live users - length: ' + notification_list.length);
-	// for(var i = 0; i < notification_list.length; i++){
-	// 	if(isLive(notification_list[i]) == true){
-	// 		chrome.notifications.create("_" + i, {type: 'basic', title: 'TwitchOnTop', message: '' + notification_list[i] + ' is now live!', iconUrl: 'images/icon.png'}, function(e){
-	// 			console.log('created notification');
-	// 		} );
-	// 		notified.push(notification_list[i]);
-	// 		notification_list.splice(i, 1);
-	// 	}
-	// }
+			notified.push(notification_list[i]);
+			notification_list.splice(i, 1);
+		}
+	}
 }
 
 function checkNotifiedOffline(){
@@ -119,51 +116,11 @@ function createAlarms(){
 	chrome.alarms.create('checkNotifiedOffline', {periodInMinutes: 30});
 }
 
-function initListeners(){
-
-	chrome.runtime.onMessage.addListener(
-		function(request, sender, sendResponse){
-			console.log('Action Recieved: ' + request.action);
-			if(request.action === 'twitchGetId'){
-				twitch_id = twitchGetId();
-				sendResponse({twitch_id: twitch_id}, function(){});
-			}
-			else if(request.action == 'twitchGetOAuthToken'){
-				chrome.storage.sync.get(['oauth_token'], function(result) {
-					console.log('OAuth Token : ' + result.oauth_token + ' Stored');
-					sendResponse({oauth_token: result.oauth_token}, function(){});
-				});
-			}
-			else if(request.action == 'refreshNotificationList'){
-				chrome.storage.sync.get(['notification_list'], function(result){
-					notification_list = result.notification_list;
-				});
-			}
-		}
-	);
-
-	chrome.alarms.onAlarm.addListener(
-		function(alarm){
-			//Get live following and update badge
-			if(alarm.name == 'getLive'){
-				console.log('Alarm for getLive');
-			}
-			else if(alarm.name == 'checkNotificationsLive'){
-				checkNotificationsLive();
-			}
-			else if(alarm.name == 'checkNotifiedOffline'){
-				checkNotifiedOffline();
-			}
-		}	
-	);
-}
-
 function startup(){
 	//TODO: Remove the clear()
 	chrome.storage.sync.clear();
 	console.log("Initializing TwitchOnTop");
 	requestOAuthToken();
-	initListeners();
 	createAlarms();
 	getNotificationsList();
 }
@@ -173,3 +130,42 @@ function installed(){
 	createAlarms();
 	initNotificationsList();
 }
+
+chrome.runtime.onStartup.addListener(startup);
+chrome.runtime.onInstalled.addListener(installed);
+
+chrome.runtime.onMessage.addListener(
+	function(request, sender, sendResponse){
+		console.log('Action Recieved: ' + request.action);
+		if(request.action === 'twitchGetId'){
+			twitch_id = twitchGetId();
+			sendResponse({twitch_id: twitch_id}, function(){});
+		}
+		else if(request.action == 'twitchGetOAuthToken'){
+			chrome.storage.sync.get(['oauth_token'], function(result) {
+				console.log('OAuth Token : ' + result.oauth_token + ' Stored');
+				sendResponse({oauth_token: result.oauth_token}, function(){});
+			});
+		}
+		else if(request.action == 'refreshNotificationList'){
+			chrome.storage.sync.get(['notification_list'], function(result){
+				notification_list = result.notification_list;
+			});
+		}
+	}
+);
+
+chrome.alarms.onAlarm.addListener(
+	function(alarm){
+		//Get live following and update badge
+		if(alarm.name == 'getLive'){
+			console.log('Alarm for getLive');
+		}
+		else if(alarm.name == 'checkNotificationsLive'){
+			checkNotificationsLive();
+		}
+		else if(alarm.name == 'checkNotifiedOffline'){
+			checkNotifiedOffline();
+		}
+	}	
+);
