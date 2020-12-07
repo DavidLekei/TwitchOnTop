@@ -1,1 +1,2 @@
 /oauth-serv/.*
+/test/coverage/*
